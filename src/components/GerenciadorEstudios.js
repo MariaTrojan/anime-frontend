@@ -70,7 +70,7 @@ export default function GerenciadorEstudios({ estudios, carregarDados, apiUrl })
   return (
     <div className="card shadow-sm p-4">
       <h4 className="mb-3">{editando ? 'Editar Estúdio' : 'Cadastrar Novo Estúdio'}</h4>
-      <form onSubmit={handleSubmit} className="row g-3 mb-4">
+      <form onSubmit={handleSubmit} className="row g-2 align-items-end mb-4">
         <div className="col-md-4">
           <label className="form-label">Nome do Estúdio *</label>
           <input
@@ -101,23 +101,23 @@ export default function GerenciadorEstudios({ estudios, carregarDados, apiUrl })
             onChange={(e) => setForm({ ...form, ano_fundacao: e.target.value })}
           />
         </div>
-        <div className="col-md-3 d-flex align-items-end gap-2">
-          <button type="submit" className="btn btn-success flex-grow-1">
-            {editando ? 'Atualizar' : 'Salvar'}
+        <div className="col-md-1 d-flex gap-1">
+        <button type="submit" className={`btn btn-sm ${editando ? 'btn-success' : 'btn-primary'} w-100`}>
+          {editando ? 'Salvar' : 'Adicionar'}
+        </button>
+        {editando && (
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary"
+            onClick={() => {
+              setEditando(false);
+              setForm({ id: null, prenome: '', pais_origem: '', ano_fundacao: '' });
+            }}
+          >
+            Cancelar
           </button>
-          {editando && (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => {
-                setEditando(false);
-                setForm({ id: null, prenome: '', pais_origem: '', ano_fundacao: '' });
-              }}
-            >
-              Cancelar
-            </button>
-          )}
-        </div>
+        )}
+      </div>
       </form>
 
       <h5 className="border-bottom pb-2">Estúdios Cadastrados</h5>

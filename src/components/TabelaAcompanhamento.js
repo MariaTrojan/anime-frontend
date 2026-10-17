@@ -89,7 +89,7 @@ export default function TabelaAcompanhamento({
           {editando ? '✏️ Editar Acompanhamento' : ' Adicionar Anime ao Meu Acompanhamento'}
         </h5>
         <form onSubmit={handleSubmit} className="row g-2 align-items-end">
-          <div className="col-md-4">
+          <div className="col-md-3">
             <label className="form-label small fw-bold">Anime *</label>
             <select
               className="form-select form-select-sm"
@@ -152,7 +152,7 @@ export default function TabelaAcompanhamento({
             </button>
             {editando && (
               <button type="button" className="btn btn-sm btn-secondary" onClick={handleCancelar}>
-                X
+                Cancelar
               </button>
             )}
           </div>

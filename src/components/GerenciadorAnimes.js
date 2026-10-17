@@ -90,7 +90,7 @@ export default function GerenciadorAnimes({ animes = [], estudios = [], carregar
     <div>
       <div className="card shadow-sm p-3 mb-4">
         <h5 className="mb-3">{editando ? '✏️ Editar Anime' : 'Novo Anime no Catálogo'}</h5>
-        <form onSubmit={handleSubmit} className="row g-2 align-items-end">
+        <form onSubmit={handleSubmit} className="row g-2 align-items-end mb-4">
           <div className="col-md-4">
             <label className="form-label small fw-bold">Título *</label>
             <input
@@ -137,16 +137,16 @@ export default function GerenciadorAnimes({ animes = [], estudios = [], carregar
             </select>
           </div>
 
-          <div className="col-12 text-end mt-2">
-            {editando && (
-              <button type="button" className="btn btn-sm btn-secondary me-2" onClick={limparForm}>
-                Cancelar
-              </button>
-            )}
-            <button type="submit" className="btn btn-sm btn-primary">
-              {editando ? 'Atualizar Anime' : 'Cadastrar Anime'}
+          <div className="col-md-1 d-flex gap-1">
+          <button type="submit" className={`btn btn-sm ${editando ? 'btn-success' : 'btn-primary'} w-100`}>
+            {editando ? 'Salvar' : 'Adicionar'}
+          </button>
+          {editando && (
+            <button type="button" className="btn btn-sm btn-secondary" onClick={limparForm}>
+              Cancelar
             </button>
-          </div>
+          )}
+        </div>
         </form>
       </div>
 
