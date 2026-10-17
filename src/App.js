@@ -97,10 +97,44 @@ function App() {
 
   return (
     <div className="container py-4">
-      <header className="pb-3 mb-4 border-bottom">
-        <h1 className="h3 mb-0">🎌 Gestor de Animes</h1>
-        <small className="text-muted">Painel de Controle e Histórico</small>
-      </header>
+      <header className="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center">
+  <div className="d-flex align-items-center gap-3">
+    {/* As fotos no cabeçalho */}
+    <div className="d-flex gap-2">
+      <img
+        src="/naruto.jpeg"
+        alt="Avatar Naruto"
+        style={{
+          width: '55px',
+          height: '55px',
+          objectFit: 'cover',
+          borderRadius: '50%',
+          border: '2px solid #0d6efd',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
+        }}
+        onError={(e) => { e.target.style.display = 'none'; }}
+      />
+      <img
+        src="/sasuke.jpeg"
+        alt="Avatar Sasuke"
+        style={{
+          width: '55px',
+          height: '55px',
+          objectFit: 'cover',
+          borderRadius: '50%',
+          border: '2px solid #6c757d',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
+        }}
+        onError={(e) => { e.target.style.display = 'none'; }}
+      />
+    </div>
+
+    <div>
+      <h1 className="h3 mb-0 fw-bold"> Gestor de Animes</h1>
+      <small className="text-muted">Painel de Controle e Histórico</small>
+    </div>
+  </div>
+</header>
 
       {erro && <div className="alert alert-danger">{erro}</div>}
 
