@@ -7,7 +7,7 @@ export default function GerenciadorEstudios({ estudios, carregarDados, apiUrl })
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const anoAtual = new Date().getFullYear(); // 2026
+    const anoAtual = new Date().getFullYear(); 
     const ano = form.ano_fundacao ? parseInt(form.ano_fundacao) : null;
 
     if (ano !== null) {
@@ -79,7 +79,6 @@ export default function GerenciadorEstudios({ estudios, carregarDados, apiUrl })
             required
             value={form.prenome}
             onChange={(e) => setForm({ ...form, prenome: e.target.value })}
-            placeholder="Ex: MAPPA, Madhouse"
           />
         </div>
         <div className="col-md-3">
@@ -89,7 +88,6 @@ export default function GerenciadorEstudios({ estudios, carregarDados, apiUrl })
             className="form-control"
             value={form.pais_origem}
             onChange={(e) => setForm({ ...form, pais_origem: e.target.value })}
-            placeholder="Ex: Japão"
           />
         </div>
         <div className="col-md-2">
@@ -101,7 +99,6 @@ export default function GerenciadorEstudios({ estudios, carregarDados, apiUrl })
             className="form-control"
             value={form.ano_fundacao}
             onChange={(e) => setForm({ ...form, ano_fundacao: e.target.value })}
-            placeholder="Ex: 2011"
           />
         </div>
         <div className="col-md-3 d-flex align-items-end gap-2">

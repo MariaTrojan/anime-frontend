@@ -89,7 +89,7 @@ export default function GerenciadorAnimes({ animes = [], estudios = [], carregar
   return (
     <div>
       <div className="card shadow-sm p-3 mb-4">
-        <h5 className="mb-3">{editando ? '✏️ Editar Anime' : '➕ Novo Anime no Catálogo'}</h5>
+        <h5 className="mb-3">{editando ? '✏️ Editar Anime' : 'Novo Anime no Catálogo'}</h5>
         <form onSubmit={handleSubmit} className="row g-2 align-items-end">
           <div className="col-md-4">
             <label className="form-label small fw-bold">Título *</label>
@@ -97,7 +97,6 @@ export default function GerenciadorAnimes({ animes = [], estudios = [], carregar
               type="text"
               required
               className="form-control form-control-sm"
-              placeholder="Ex: Solo Leveling"
               value={form.titulo}
               onChange={(e) => setForm({ ...form, titulo: e.target.value })}
             />
@@ -107,7 +106,6 @@ export default function GerenciadorAnimes({ animes = [], estudios = [], carregar
             <input
               type="text"
               className="form-control form-control-sm"
-              placeholder="Ex: Ação, Fantasia"
               value={form.genero}
               onChange={(e) => setForm({ ...form, genero: e.target.value })}
             />
@@ -118,7 +116,6 @@ export default function GerenciadorAnimes({ animes = [], estudios = [], carregar
               type="number"
               min="1"
               className="form-control form-control-sm"
-              placeholder="Ex: 12"
               value={form.total_episodios}
               onChange={(e) => setForm({ ...form, total_episodios: e.target.value })}
             />

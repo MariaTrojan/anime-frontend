@@ -3,76 +3,100 @@ import React, { useState } from 'react';
 export default function TabelaAcompanhamento({
   acompanhamentos,
   animes = [],
-  estudios = [],
   carregando,
   carregarDados,
   apiUrl,
-  onEditar,
   onExcluir
 }) {
-  const [novoAcomp, setNovoAcomp] = useState({
+  const estadoInicial = {
+    id: null,
     anime_id: '',
     status: 'Assistindo',
     episodios_assistidos: 0,
     nota: ''
-  });
+  };
 
-  // Função para salvar com as regras de negócio validadas
-  const handleCadastrarAcompanhamento = async (e) => {
+  const [formAcomp, setFormAcomp] = useState(estadoInicial);
+  const [editando, setEditando] = useState(false);
+
+  const handleEditar = (item) => {
+    setFormAcomp({
+      id: item.id,
+      anime_id: item.anime_id,
+      status: item.status,
+      episodios_assistidos: item.episodios_assistidos,
+      nota: item.nota !== null && item.nota !== undefined ? item.nota : ''
+    });
+    setEditando(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelar = () => {
+    setFormAcomp(estadoInicial);
+    setEditando(false);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const eps = parseInt(novoAcomp.episodios_assistidos) || 0;
+    const eps = parseInt(formAcomp.episodios_assistidos) || 0;
 
-    // Regra 1: Impedir episódios negativos
     if (eps < 0) {
       alert('A quantidade de episódios vistos não pode ser negativa.');
       return;
     }
 
-    // Regra 2: Impedir episódios maiores que o total do anime
-    const animeSelecionado = animes.find(a => Number(a.id) === Number(novoAcomp.anime_id));
+    const animeSelecionado = animes.find(a => Number(a.id) === Number(formAcomp.anime_id));
     if (animeSelecionado && animeSelecionado.total_episodios && eps > animeSelecionado.total_episodios) {
       alert(`Você não pode assistir ${eps} episódios, pois o anime só tem ${animeSelecionado.total_episodios} episódios.`);
       return;
     }
 
+    const metodo = editando ? 'PUT' : 'POST';
+    const payload = {
+      ...(editando ? { id: formAcomp.id } : {}),
+      anime_id: parseInt(formAcomp.anime_id),
+      status: formAcomp.status,
+      episodios_assistidos: eps,
+      nota: formAcomp.nota !== '' ? parseFloat(formAcomp.nota) : null
+    };
+
     try {
       const res = await fetch(`${apiUrl}/acompanhamento`, {
-        method: 'POST',
+        method: metodo,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          anime_id: parseInt(novoAcomp.anime_id),
-          status: novoAcomp.status,
-          episodios_assistidos: eps,
-          nota: novoAcomp.nota ? parseFloat(novoAcomp.nota) : null
-        })
+        body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error('Falha ao adicionar à lista');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Falha ao salvar acompanhamento');
+      }
 
-      setNovoAcomp({ anime_id: '', status: 'Assistindo', episodios_assistidos: 0, nota: '' });
+      handleCancelar();
       if (carregarDados) carregarDados();
     } catch (err) {
-      alert('Erro ao inserir acompanhamento: ' + err.message);
+      alert('Erro: ' + err.message);
     }
   };
 
-  // Identifica o total de episódios do anime atualmente selecionado no form
-  const animeAtual = animes.find(a => Number(a.id) === Number(novoAcomp.anime_id));
+  const animeAtual = animes.find(a => Number(a.id) === Number(formAcomp.anime_id));
 
   return (
     <div>
-      {/* Formulário de Inclusão Rápida com Validação */}
       <div className="card shadow-sm p-3 mb-4">
-        <h5 className="mb-3"> Adicionar Anime ao Meu Acompanhamento</h5>
-        <form onSubmit={handleCadastrarAcompanhamento} className="row g-2 align-items-end">
+        <h5 className="mb-3">
+          {editando ? '✏️ Editar Acompanhamento' : ' Adicionar Anime ao Meu Acompanhamento'}
+        </h5>
+        <form onSubmit={handleSubmit} className="row g-2 align-items-end">
           <div className="col-md-4">
             <label className="form-label small fw-bold">Anime *</label>
             <select
               className="form-select form-select-sm"
               required
-              value={novoAcomp.anime_id}
-              onChange={(e) => setNovoAcomp({ ...novoAcomp, anime_id: e.target.value })}
+              disabled={editando} 
+              value={formAcomp.anime_id}
+              onChange={(e) => setFormAcomp({ ...formAcomp, anime_id: e.target.value })}
             >
               <option value="">Selecione um anime...</option>
               {animes.map((a) => (
@@ -82,12 +106,13 @@ export default function TabelaAcompanhamento({
               ))}
             </select>
           </div>
+
           <div className="col-md-3">
             <label className="form-label small fw-bold">Status *</label>
             <select
               className="form-select form-select-sm"
-              value={novoAcomp.status}
-              onChange={(e) => setNovoAcomp({ ...novoAcomp, status: e.target.value })}
+              value={formAcomp.status}
+              onChange={(e) => setFormAcomp({ ...formAcomp, status: e.target.value })}
             >
               <option value="Assistindo">Assistindo</option>
               <option value="Completo">Completo</option>
@@ -95,6 +120,7 @@ export default function TabelaAcompanhamento({
               <option value="Dropado">Dropado</option>
             </select>
           </div>
+
           <div className="col-md-2">
             <label className="form-label small fw-bold">Eps Vistos</label>
             <input
@@ -102,10 +128,11 @@ export default function TabelaAcompanhamento({
               min="0"
               max={animeAtual?.total_episodios || undefined}
               className="form-control form-select-sm"
-              value={novoAcomp.episodios_assistidos}
-              onChange={(e) => setNovoAcomp({ ...novoAcomp, episodios_assistidos: e.target.value })}
+              value={formAcomp.episodios_assistidos}
+              onChange={(e) => setFormAcomp({ ...formAcomp, episodios_assistidos: e.target.value })}
             />
           </div>
+
           <div className="col-md-2">
             <label className="form-label small fw-bold">Nota (0 a 10)</label>
             <input
@@ -114,19 +141,24 @@ export default function TabelaAcompanhamento({
               min="0"
               max="10"
               className="form-control form-select-sm"
-              value={novoAcomp.nota}
-              onChange={(e) => setNovoAcomp({ ...novoAcomp, nota: e.target.value })}
+              value={formAcomp.nota}
+              onChange={(e) => setFormAcomp({ ...formAcomp, nota: e.target.value })}
             />
           </div>
-          <div className="col-md-1">
-            <button type="submit" className="btn btn-sm btn-primary w-100">
-              Salvar
+
+          <div className="col-md-1 d-flex gap-1">
+            <button type="submit" className={`btn btn-sm ${editando ? 'btn-success' : 'btn-primary'} w-100`}>
+              {editando ? 'Salvar' : 'Adicionar'}
             </button>
+            {editando && (
+              <button type="button" className="btn btn-sm btn-secondary" onClick={handleCancelar}>
+                X
+              </button>
+            )}
           </div>
         </form>
       </div>
 
-      {/* Tabela de Exibição */}
       <div className="card shadow-sm border-0">
         <div className="card-body p-0">
           <div className="table-responsive">
@@ -148,7 +180,7 @@ export default function TabelaAcompanhamento({
                 ) : acompanhamentos.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="text-center py-4 text-muted">
-                      Nenhum anime na sua lista ainda. Adicione um no formulário acima!
+                      Nenhum anime na sua lista ainda.
                     </td>
                   </tr>
                 ) : (
@@ -179,7 +211,7 @@ export default function TabelaAcompanhamento({
                           {anime?.total_episodios ? ` / ${anime.total_episodios}` : ''} eps
                         </td>
                         <td>
-                          {item.nota ? (
+                          {item.nota !== null && item.nota !== undefined ? (
                             <span className="text-warning fw-bold">★ {item.nota}/10</span>
                           ) : (
                             <span className="text-muted">-</span>
@@ -188,7 +220,7 @@ export default function TabelaAcompanhamento({
                         <td className="text-end">
                           <button
                             className="btn btn-sm btn-outline-primary me-2"
-                            onClick={() => onEditar(item)}
+                            onClick={() => handleEditar(item)}
                           >
                             Editar
                           </button>
