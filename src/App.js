@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import TabelaAcompanhamento from './components/TabelaAcompanhamento';
-import ModalNovoAnime from './components/ModalNovoAnime';
 import ModalEdicao from './components/ModalEdicao';
 import GerenciadorAnimes from './components/GerenciadorAnimes';
 import GerenciadorEstudios from './components/GerenciadorEstudios';
@@ -15,20 +14,8 @@ function App() {
   const [erro, setErro] = useState(null);
   const [carregando, setCarregando] = useState(false);
 
-  const [modalNovoAberto, setModalNovoAberto] = useState(false);
+  // Modal exclusivo de Edição rápida de Progresso
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
-
-  const estadoInicialFormNovo = {
-    titulo: '',
-    genero: '',
-    total_episodios: '',
-    estudio_id: '',
-    status: 'Assistindo',
-    episodios_assistidos: 0,
-    nota: ''
-  };
-
-  const [formNovo, setFormNovo] = useState(estadoInicialFormNovo);
   const [formEdicao, setFormEdicao] = useState({
     id: null,
     anime_id: null,
@@ -61,44 +48,6 @@ function App() {
         setErro('Erro ao carregar dados: ' + err.message);
         setCarregando(false);
       });
-  };
-
-  const handleSalvarNovo = async (e) => {
-    e.preventDefault();
-    try {
-      const resAnime = await fetch(`${API_URL}/anime`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          titulo: formNovo.titulo,
-          genero: formNovo.genero,
-          total_episodios: formNovo.total_episodios ? parseInt(formNovo.total_episodios) : null,
-          estudio_id: parseInt(formNovo.estudio_id)
-        })
-      });
-
-      const dadosAnime = await resAnime.json();
-      const novoAnimeId = dadosAnime.objeto?.id || dadosAnime.id;
-
-      if (!novoAnimeId) throw new Error('Falha ao registrar o anime');
-
-      await fetch(`${API_URL}/acompanhamento`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: formNovo.status,
-          episodios_assistidos: parseInt(formNovo.episodios_assistidos) || 0,
-          nota: formNovo.nota ? parseFloat(formNovo.nota) : null,
-          anime_id: novoAnimeId
-        })
-      });
-
-      setFormNovo(estadoInicialFormNovo);
-      setModalNovoAberto(false);
-      carregarDados();
-    } catch (err) {
-      alert('Erro ao cadastrar: ' + err.message);
-    }
   };
 
   const handleAbrirEdicao = (item) => {
@@ -148,24 +97,18 @@ function App() {
 
   return (
     <div className="container py-4">
-      <header className="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center">
-        <div>
-          <h1 className="h3 mb-0">🎌 Gestor de Animes</h1>
-          <small className="text-muted">Painel de Controle e Histórico</small>
-        </div>
-        {abaAtiva === 'acompanhamentos' && (
-          <button className="btn btn-primary" onClick={() => setModalNovoAberto(true)}>
-            + Adicionar Anime
-          </button>
-        )}
+      <header className="pb-3 mb-4 border-bottom">
+        <h1 className="h3 mb-0">🎌 Gestor de Animes</h1>
+        <small className="text-muted">Painel de Controle e Histórico</small>
       </header>
 
       {erro && <div className="alert alert-danger">{erro}</div>}
 
-      {/* Menu de Abas */}
+      {/* Navegação entre as 3 Abas */}
       <ul className="nav nav-tabs mb-4">
         <li className="nav-item">
           <button
+            type="button"
             className={`nav-link ${abaAtiva === 'acompanhamentos' ? 'active fw-bold' : ''}`}
             onClick={() => setAbaAtiva('acompanhamentos')}
           >
@@ -174,6 +117,7 @@ function App() {
         </li>
         <li className="nav-item">
           <button
+            type="button"
             className={`nav-link ${abaAtiva === 'animes' ? 'active fw-bold' : ''}`}
             onClick={() => setAbaAtiva('animes')}
           >
@@ -182,6 +126,7 @@ function App() {
         </li>
         <li className="nav-item">
           <button
+            type="button"
             className={`nav-link ${abaAtiva === 'estudios' ? 'active fw-bold' : ''}`}
             onClick={() => setAbaAtiva('estudios')}
           >
@@ -190,7 +135,7 @@ function App() {
         </li>
       </ul>
 
-      {/* Renderização condicional por aba */}
+      {/* Conteúdo de Cada Aba */}
       {abaAtiva === 'acompanhamentos' && (
         <TabelaAcompanhamento
           acompanhamentos={acompanhamentos}
@@ -219,22 +164,15 @@ function App() {
         />
       )}
 
-      <ModalNovoAnime
-        aberto={modalNovoAberto}
-        onFechar={() => setModalNovoAberto(false)}
-        form={formNovo}
-        setForm={setFormNovo}
-        estudios={estudios}
-        onSalvar={handleSalvarNovo}
-      />
-
-      <ModalEdicao
-        aberto={modalEdicaoAberto}
-        onFechar={() => setModalEdicaoAberto(false)}
-        form={formEdicao}
-        setForm={setFormEdicao}
-        onSalvar={handleSalvarEdicao}
-      />
+      {modalEdicaoAberto && (
+        <ModalEdicao
+          aberto={modalEdicaoAberto}
+          onFechar={() => setModalEdicaoAberto(false)}
+          form={formEdicao}
+          setForm={setFormEdicao}
+          onSalvar={handleSalvarEdicao}
+        />
+      )}
     </div>
   );
 }
