@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import TabelaAcompanhamento from './components/TabelaAcompanhamento';
-import FormularioAnime from './components/FormularioAnime';
+import ModalNovoAnime from './components/ModalNovoAnime';
 import ModalEdicao from './components/ModalEdicao';
+import GerenciadorAnimes from './components/GerenciadorAnimes';
+import GerenciadorEstudios from './components/GerenciadorEstudios';
 
 const API_URL = 'https://anime-api-3zhn.onrender.com';
 
 function App() {
-  const [telaAtual, setTelaAtual] = useState('lista'); 
+  const [abaAtiva, setAbaAtiva] = useState('acompanhamentos');
   const [acompanhamentos, setAcompanhamentos] = useState([]);
   const [animes, setAnimes] = useState([]);
   const [estudios, setEstudios] = useState([]);
   const [erro, setErro] = useState(null);
   const [carregando, setCarregando] = useState(false);
 
-  
+  const [modalNovoAberto, setModalNovoAberto] = useState(false);
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
 
   const estadoInicialFormNovo = {
@@ -56,12 +58,11 @@ function App() {
         setCarregando(false);
       })
       .catch((err) => {
-        setErro('Erro ao carregar dados da API: ' + err.message);
+        setErro('Erro ao carregar dados: ' + err.message);
         setCarregando(false);
       });
   };
 
-  // Cadastro de anime
   const handleSalvarNovo = async (e) => {
     e.preventDefault();
     try {
@@ -93,7 +94,7 @@ function App() {
       });
 
       setFormNovo(estadoInicialFormNovo);
-      setTelaAtual('lista'); // Volta para a tela principal após salvar
+      setModalNovoAberto(false);
       carregarDados();
     } catch (err) {
       alert('Erro ao cadastrar: ' + err.message);
@@ -148,19 +149,12 @@ function App() {
   return (
     <div className="container py-4">
       <header className="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center">
-  <div className="d-flex align-items-center gap-3">
-    <div className="d-flex rounded overflow-hidden shadow-sm border" style={{ height: '48px' }}>
-      <img src="/sasuke.jpeg" alt="Parte 1" style={{ width: '48px', height: '48px', objectFit: 'cover' }} />
-      <img src="/naruto.jpeg" alt="Parte 2" style={{ width: '48px', height: '48px', objectFit: 'cover' }} />
-    </div>
-
-    <div>
-      <h1 className="h3 mb-0"> Minha Lista de Animes</h1>
-      <small className="text-muted">Acompanhe seus episódios, progresso e avaliações</small>
-    </div>
-  </div>
-        {telaAtual === 'lista' && (
-          <button className="btn btn-primary" onClick={() => setTelaAtual('formulario')}>
+        <div>
+          <h1 className="h3 mb-0">🎌 Gestor de Animes</h1>
+          <small className="text-muted">Painel de Controle e Histórico</small>
+        </div>
+        {abaAtiva === 'acompanhamentos' && (
+          <button className="btn btn-primary" onClick={() => setModalNovoAberto(true)}>
             + Adicionar Anime
           </button>
         )}
@@ -168,7 +162,36 @@ function App() {
 
       {erro && <div className="alert alert-danger">{erro}</div>}
 
-      {telaAtual === 'lista' ? (
+      {/* Menu de Abas */}
+      <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${abaAtiva === 'acompanhamentos' ? 'active fw-bold' : ''}`}
+            onClick={() => setAbaAtiva('acompanhamentos')}
+          >
+            Meu Acompanhamento
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${abaAtiva === 'animes' ? 'active fw-bold' : ''}`}
+            onClick={() => setAbaAtiva('animes')}
+          >
+            Catálogo de Animes
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${abaAtiva === 'estudios' ? 'active fw-bold' : ''}`}
+            onClick={() => setAbaAtiva('estudios')}
+          >
+            Estúdios
+          </button>
+        </li>
+      </ul>
+
+      {/* Renderização condicional por aba */}
+      {abaAtiva === 'acompanhamentos' && (
         <TabelaAcompanhamento
           acompanhamentos={acompanhamentos}
           animes={animes}
@@ -177,15 +200,33 @@ function App() {
           onEditar={handleAbrirEdicao}
           onExcluir={handleExcluir}
         />
-      ) : (
-        <FormularioAnime
-          form={formNovo}
-          setForm={setFormNovo}
+      )}
+
+      {abaAtiva === 'animes' && (
+        <GerenciadorAnimes
+          animes={animes}
           estudios={estudios}
-          onSalvar={handleSalvarNovo}
-          onVoltar={() => setTelaAtual('lista')}
+          carregarDados={carregarDados}
+          apiUrl={API_URL}
         />
       )}
+
+      {abaAtiva === 'estudios' && (
+        <GerenciadorEstudios
+          estudios={estudios}
+          carregarDados={carregarDados}
+          apiUrl={API_URL}
+        />
+      )}
+
+      <ModalNovoAnime
+        aberto={modalNovoAberto}
+        onFechar={() => setModalNovoAberto(false)}
+        form={formNovo}
+        setForm={setFormNovo}
+        estudios={estudios}
+        onSalvar={handleSalvarNovo}
+      />
 
       <ModalEdicao
         aberto={modalEdicaoAberto}
