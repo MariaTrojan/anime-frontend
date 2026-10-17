@@ -6,6 +6,17 @@ export default function GerenciadorEstudios({ estudios, carregarDados, apiUrl })
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const anoAtual = new Date().getFullYear(); // 2026
+    const ano = form.ano_fundacao ? parseInt(form.ano_fundacao) : null;
+
+    if (ano !== null) {
+      if (ano < 1900 || ano > anoAtual) {
+        alert(`O ano de fundação deve estar entre 1900 e o ano atual (${anoAtual}).`);
+        return;
+      }
+    }
+
     const metodo = editando ? 'PUT' : 'POST';
     const payload = {
       prenome: form.prenome,
@@ -85,6 +96,8 @@ export default function GerenciadorEstudios({ estudios, carregarDados, apiUrl })
           <label className="form-label">Ano Fundação</label>
           <input
             type="number"
+            min="1900"
+            max={new Date().getFullYear()}
             className="form-control"
             value={form.ano_fundacao}
             onChange={(e) => setForm({ ...form, ano_fundacao: e.target.value })}

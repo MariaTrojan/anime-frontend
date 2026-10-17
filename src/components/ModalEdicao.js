@@ -9,11 +9,24 @@ export default function ModalEdicao({
 }) {
   if (!aberto) return null;
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const eps = parseInt(form.episodios_assistidos) || 0;
+
+    // Trava para impedir episódios negativos
+    if (eps < 0) {
+      alert("A quantidade de episódios assistidos não pode ser negativa.");
+      return;
+    }
+
+    onSalvar(e);
+  };
+
   return (
     <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
       <div className="modal-dialog">
         <div className="modal-content">
-          <form onSubmit={onSalvar}>
+          <form onSubmit={handleSubmit}>
             <div className="modal-header">
               <h5 className="modal-title">Atualizar: {form.anime_titulo}</h5>
               <button type="button" className="btn-close" onClick={onFechar}></button>
@@ -36,6 +49,7 @@ export default function ModalEdicao({
                 <label className="form-label">Episódios Assistidos</label>
                 <input
                   type="number"
+                  min="0"
                   className="form-control"
                   value={form.episodios_assistidos}
                   onChange={(e) => setForm({ ...form, episodios_assistidos: e.target.value })}
