@@ -4,6 +4,7 @@ import ModalEdicao from './components/ModalEdicao';
 import GerenciadorAnimes from './components/GerenciadorAnimes';
 import GerenciadorEstudios from './components/GerenciadorEstudios';
 
+// URL da sua API no Render (ou http://localhost:3002 se estiver rodando local)
 const API_URL = 'https://anime-api-3zhn.onrender.com';
 
 function App() {
@@ -11,10 +12,9 @@ function App() {
   const [acompanhamentos, setAcompanhamentos] = useState([]);
   const [animes, setAnimes] = useState([]);
   const [estudios, setEstudios] = useState([]);
-  const [erro, setErro] = useState(null);
   const [carregando, setCarregando] = useState(false);
+  const [erro, setErro] = useState(null);
 
-  // Modal exclusivo de Edição rápida de Progresso
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
   const [formEdicao, setFormEdicao] = useState({
     id: null,
@@ -29,32 +29,52 @@ function App() {
     carregarDados();
   }, []);
 
-  const carregarDados = () => {
+  const carregarDados = async () => {
     setCarregando(true);
     setErro(null);
 
-    Promise.all([
-      fetch(`${API_URL}/acompanhamento`).then(res => res.json()),
-      fetch(`${API_URL}/anime`).then(res => res.json()),
-      fetch(`${API_URL}/estudio`).then(res => res.json())
-    ])
-      .then(([dadosAcomp, dadosAnimes, dadosEstudios]) => {
+    // 1. Carrega acompanhamentos
+    try {
+      const resAcomp = await fetch(`${API_URL}/acompanhamento`);
+      if (resAcomp.ok) {
+        const dadosAcomp = await resAcomp.json();
         setAcompanhamentos(Array.isArray(dadosAcomp) ? dadosAcomp : []);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar acompanhamentos:', err);
+    }
+
+    // 2. Carrega catálogo de animes
+    try {
+      const resAnimes = await fetch(`${API_URL}/anime`);
+      if (resAnimes.ok) {
+        const dadosAnimes = await resAnimes.json();
         setAnimes(Array.isArray(dadosAnimes) ? dadosAnimes : []);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar animes:', err);
+    }
+
+    // 3. Carrega estúdios
+    try {
+      const resEstudios = await fetch(`${API_URL}/estudio`);
+      if (resEstudios.ok) {
+        const dadosEstudios = await resEstudios.json();
         setEstudios(Array.isArray(dadosEstudios) ? dadosEstudios : []);
-        setCarregando(false);
-      })
-      .catch((err) => {
-        setErro('Erro ao carregar dados: ' + err.message);
-        setCarregando(false);
-      });
+      }
+    } catch (err) {
+      console.error('Erro ao buscar estúdios:', err);
+    }
+
+    setCarregando(false);
   };
 
   const handleAbrirEdicao = (item) => {
+    const animeEncontrado = animes.find((a) => Number(a.id) === Number(item.anime_id));
     setFormEdicao({
       id: item.id,
       anime_id: item.anime_id,
-      anime_titulo: item.anime_titulo || `Anime #${item.anime_id}`,
+      anime_titulo: item.anime_titulo || item.animes?.titulo || animeEncontrado?.titulo || `Anime #${item.anime_id}`,
       status: item.status,
       episodios_assistidos: item.episodios_assistidos,
       nota: item.nota || ''
@@ -65,7 +85,7 @@ function App() {
   const handleSalvarEdicao = async (e) => {
     e.preventDefault();
     try {
-      await fetch(`${API_URL}/acompanhamento`, {
+      const res = await fetch(`${API_URL}/acompanhamento`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,62 +97,53 @@ function App() {
         })
       });
 
+      if (!res.ok) {
+        const dataErr = await res.json();
+        throw new Error(dataErr.message || 'Erro ao atualizar acompanhamento');
+      }
+
       setModalEdicaoAberto(false);
       carregarDados();
     } catch (err) {
-      alert('Erro ao atualizar: ' + err.message);
+      alert(err.message);
     }
   };
 
   const handleExcluir = async (id, titulo) => {
-    if (window.confirm(`Tem certeza que deseja remover "${titulo}" da sua lista?`)) {
+    if (window.confirm(`Deseja remover "${titulo}" da sua lista?`)) {
       try {
-        await fetch(`${API_URL}/acompanhamento/${id}`, { method: 'DELETE' });
+        const res = await fetch(`${API_URL}/acompanhamento/${id}`, { method: 'DELETE' });
+        if (!res.ok) {
+          const dataErr = await res.json();
+          throw new Error(dataErr.message || 'Erro ao remover acompanhamento');
+        }
         carregarDados();
       } catch (err) {
-        alert('Erro ao remover: ' + err.message);
+        alert(err.message);
       }
     }
   };
 
   return (
     <div className="container py-4">
-      <header className="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center">
-  <div className="d-flex align-items-center gap-3">
-    {/* Fotos header */}
-    <div>
-      <img
-        src="/sasuke.jpeg"
-        alt="Naruto"
-        style={{
-          width: '50px',
-          height: '50px',
-          objectFit: 'cover',
-        }}
-        onError={(e) => { e.target.style.display = 'none'; }}
-      />
-      <img
-        src="/naruto.jpeg"
-        alt="Sasuke"
-        style={{
-          width: '50px',
-          height: '50px',
-          objectFit: 'cover',
-        }}
-        onError={(e) => { e.target.style.display = 'none'; }}
-      />
-    </div>
-
-    <div>
-      <h1 className="h3 mb-0 fw-bold">Gestor de Animes</h1>
-      <small className="text-muted">Painel de Controle e Histórico</small>
-    </div>
-  </div>
-</header>
+      {/* Header com as fotos unidas */}
+      <header className="pb-3 mb-4 border-bottom d-flex align-items-center gap-3">
+        <div
+          className="d-inline-flex"
+          style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #dee2e6' }}
+        >
+          <img src="/sasuke.jpeg" alt="Sasuke" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+          <img src="/naruto.jpeg" alt="Naruto" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+        </div>
+        <div>
+          <h1 className="h3 mb-0 fw-bold">Gestor de Animes</h1>
+          <small className="text-muted">Painel de Controle e Histórico</small>
+        </div>
+      </header>
 
       {erro && <div className="alert alert-danger">{erro}</div>}
 
-      {/* Navegação entre as 3 Abas */}
+      {/* Navegação por Abas */}
       <ul className="nav nav-tabs mb-4">
         <li className="nav-item">
           <button
@@ -163,19 +174,21 @@ function App() {
         </li>
       </ul>
 
-      {/* Conteúdo de Cada Aba */}
+      {/* Aba 1: Acompanhamentos */}
       {abaAtiva === 'acompanhamentos' && (
-      <TabelaAcompanhamento
-        acompanhamentos={acompanhamentos}
-        animes={animes}
-        carregando={carregando}
-        carregarDados={carregarDados}
-        apiUrl={API_URL}
-        onEditar={handleAbrirEdicao}
-        onExcluir={handleExcluir}
-      />
+        <TabelaAcompanhamento
+          acompanhamentos={acompanhamentos}
+          animes={animes}
+          estudios={estudios}
+          carregando={carregando}
+          carregarDados={carregarDados}
+          apiUrl={API_URL}
+          onEditar={handleAbrirEdicao}
+          onExcluir={handleExcluir}
+        />
       )}
 
+      {/* Aba 2: Catálogo de Animes */}
       {abaAtiva === 'animes' && (
         <GerenciadorAnimes
           animes={animes}
@@ -185,6 +198,7 @@ function App() {
         />
       )}
 
+      {/* Aba 3: Estúdios */}
       {abaAtiva === 'estudios' && (
         <GerenciadorEstudios
           estudios={estudios}
