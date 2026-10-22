@@ -20,7 +20,7 @@ export default function GerenciadorEstudios({ estudios, carregarDados, apiUrl })
     const metodo = editando ? 'PUT' : 'POST';
     const payload = {
       prenome: form.prenome,
-      pais_origem: form.pais_origem || 'Japão',
+      pais_origem: form.pais_origem || 'Japão', //valor pré definido caso n informe
       ano_fundacao: form.ano_fundacao ? parseInt(form.ano_fundacao) : null
     };
 
@@ -69,7 +69,7 @@ export default function GerenciadorEstudios({ estudios, carregarDados, apiUrl })
 
   return (
     <div className="card shadow-sm p-4">
-      <h4 className="mb-3">{editando ? 'Editar Estúdio' : 'Cadastrar Novo Estúdio'}</h4>
+      <h4 className="mb-3">{editando ? '✏️ Editar Estúdio' : 'Cadastrar Novo Estúdio'}</h4>
       <form onSubmit={handleSubmit} className="row g-2 align-items-end mb-4">
         <div className="col-md-4">
           <label className="form-label">Nome do Estúdio *</label>

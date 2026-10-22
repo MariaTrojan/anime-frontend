@@ -11,11 +11,11 @@ export default function GerenciadorAnimes({ animes = [], estudios = [], carregar
   const [editando, setEditando] = useState(false);
 
   const limparForm = () => {
-    setForm({ id: null, titulo: '', genero: '', total_episodios: '', estudio_id: '' });
+    setForm({ id: null, titulo: '', genero: '', total_episodios: '', estudio_id: '' }); //atualiza os dados do formulario
     setEditando(false);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => { // n recarregar toda vez que clicar no botão
     e.preventDefault();
 
     if (!form.estudio_id) {
@@ -24,8 +24,8 @@ export default function GerenciadorAnimes({ animes = [], estudios = [], carregar
     }
 
     const eps = form.total_episodios ? parseInt(form.total_episodios) : null;
-    if (eps !== null && eps <= 0) {
-      alert('O total de episódios deve ser maior que zero.');
+    if (eps !== null && eps < 0) {
+      alert('O total de episódios não deve ser menor que zero.');
       return;
     }
 
@@ -38,6 +38,7 @@ export default function GerenciadorAnimes({ animes = [], estudios = [], carregar
       estudio_id: parseInt(form.estudio_id)
     };
 
+    //manda pra API
     try {
       const res = await fetch(`${apiUrl}/anime`, {
         method: metodo,

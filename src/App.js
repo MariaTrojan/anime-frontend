@@ -13,14 +13,17 @@ function App() {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState(null);
 
+  //Executa uma única vez ao carregar a página
   useEffect(() => {
     carregarDados();
   }, []);
 
+  // GET das tres tabelas
   const carregarDados = async () => {
     setCarregando(true);
     setErro(null);
 
+    // Busca acompanhamento
     try {
       const resAcomp = await fetch(`${API_URL}/acompanhamento`);
       if (resAcomp.ok) {
@@ -31,6 +34,7 @@ function App() {
       console.error('Erro ao buscar acompanhamentos:', err);
     }
 
+    //Busca animes
     try {
       const resAnimes = await fetch(`${API_URL}/anime`);
       if (resAnimes.ok) {
@@ -41,6 +45,7 @@ function App() {
       console.error('Erro ao buscar animes:', err);
     }
 
+    //Busca estudios
     try {
       const resEstudios = await fetch(`${API_URL}/estudio`);
       if (resEstudios.ok) {
@@ -71,7 +76,6 @@ function App() {
 
   return (
     <div className="container py-4">
-      {/* Header com as fotos */}
       <header className="pb-3 mb-4 border-bottom d-flex align-items-center gap-3">
         <div
           className="d-inline-flex"

@@ -19,6 +19,7 @@ export default function TabelaAcompanhamento({
   const [formAcomp, setFormAcomp] = useState(estadoInicial);
   const [editando, setEditando] = useState(false);
 
+  // Função que muda para edição
   const handleEditar = (item) => {
     setFormAcomp({
       id: item.id,
@@ -36,6 +37,7 @@ export default function TabelaAcompanhamento({
     setEditando(false);
   };
 
+  // Pro navegador n ficar recarregando
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -52,6 +54,7 @@ export default function TabelaAcompanhamento({
       return;
     }
 
+    // editando usa o PUT, senão POST
     const metodo = editando ? 'PUT' : 'POST';
     const payload = {
       ...(editando ? { id: formAcomp.id } : {}),
@@ -61,6 +64,7 @@ export default function TabelaAcompanhamento({
       nota: formAcomp.nota !== '' ? parseFloat(formAcomp.nota) : null
     };
 
+    //Manda os dados pra API
     try {
       const res = await fetch(`${apiUrl}/acompanhamento`, {
         method: metodo,
